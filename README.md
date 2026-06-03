@@ -1,4 +1,4 @@
-# savery-portfolio
+# Portfolio
 
 Personal site for Dustin Savery. Astro + React islands + TypeScript, plain CSS, deployed static to GitHub Pages. Ships almost no JavaScript — the only React island is the interactive Filter demo.
 
