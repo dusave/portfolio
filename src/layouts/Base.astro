@@ -1,0 +1,82 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const {
+  title = 'Dustin Savery — React UI Engineer',
+  description = 'Frontend engineer with twenty years building for web, desktop & mobile.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0b0b0c" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="grain">
+    <div id="glow"></div>
+    <slot />
+
+    <script>
+      // Progressive enhancement only — the page is fully readable without JS.
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Scroll reveals + count-up, both via one IntersectionObserver.
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            const el = entry.target as HTMLElement;
+            el.classList.add('is-visible');
+
+            const target = el.dataset.count;
+            const suffix = el.dataset.suffix || '';
+            if (target && !reduce) {
+              const to = Number(target);
+              const dur = 1600;
+              const start = performance.now();
+              const tick = (t: number) => {
+                const p = Math.min(1, (t - start) / dur);
+                const eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = Math.round(eased * to).toLocaleString() + suffix;
+                if (p < 1) requestAnimationFrame(tick);
+              };
+              requestAnimationFrame(tick);
+            } else if (target) {
+              el.textContent = Number(target).toLocaleString() + suffix;
+            }
+            io.unobserve(el);
+          }
+        },
+        { threshold: 0.18 }
+      );
+      document.querySelectorAll('.reveal, [data-count]').forEach((el) => io.observe(el));
+
+      // Cursor-tracking accent glow (pointer devices only).
+      const glow = document.getElementById('glow');
+      if (glow && !reduce && window.matchMedia('(pointer: fine)').matches) {
+        window.addEventListener('pointermove', (e) => {
+          glow.style.transform = `translate(${e.clientX - 260}px, ${e.clientY - 260}px)`;
+        });
+      }
+    </script>
+  </body>
+</html>
