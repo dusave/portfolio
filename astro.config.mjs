@@ -5,7 +5,7 @@ import react from '@astrojs/react';
 // uncomment `base` and set it to '/your-repo-name'. For a custom domain
 // (dustinsavery.com) or a user repo (username.github.io), leave base off.
 export default defineConfig({
-  site: 'https://dustinsavery.com',
+  site: 'https://dustin.codes',
   // base: '/savery-portfolio',
   integrations: [react()],
 });
