@@ -948,7 +948,10 @@ export default function MotionSite() {
       const x = els.current;
 
       const total = document.documentElement.scrollHeight - vh;
-      if (progressBar.current) progressBar.current.style.height = `${(y / total) * 100}%`;
+      if (progressBar.current) {
+        const p = total > 0 ? y / total : 0;
+        progressBar.current.style.clipPath = `inset(0 0 ${(1 - p) * 100}% 0)`;
+      }
 
       // --- soft elastic snap: when scrolling settles near a scene's hold
       // point, ease into it with a slight overshoot. weighted toward the
@@ -1421,7 +1424,7 @@ export default function MotionSite() {
 const S = {
   root: { fontFamily: "'JetBrains Mono', ui-monospace, monospace", color: "#ece9e1", background: "#0d0a14" },
   progressTrack: { position: "fixed", left: 0, top: 0, bottom: 0, width: 3, background: "#1a1526", zIndex: 50 },
-  progressFill: { width: "100%", height: "0%", background: `linear-gradient(${PINK}, ${BLUE})` },
+  progressFill: { width: "100%", height: "100%", background: `linear-gradient(to bottom, ${PINK}, ${BLUE})`, clipPath: "inset(0 0 100% 0)" },
   wrapper: { position: "relative", height: "165svh", pointerEvents: "none" },
   scene: {
     position: "sticky", top: 0, height: "100svh", overflow: "hidden",
