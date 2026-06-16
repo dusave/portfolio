@@ -12,6 +12,31 @@ const ramp = (p, a, b) => clamp01((p - a) / (b - a));
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
+const SECTION_HASHES = { production: 1, language: 2, record: 3, contact: 4 };
+
+function getSectionScrollTarget(i, wrapper, vh, lastIndex) {
+  if (!wrapper) return 0;
+  if (i === 0) return 0;
+  if (i === lastIndex) return wrapper.offsetTop + (wrapper.offsetHeight - vh);
+  return wrapper.offsetTop + (wrapper.offsetHeight - vh) * 0.58;
+}
+
+function SectionTag({ hash, sectionIndex, color, onNavigate, children }) {
+  return (
+    <a
+      href={hash ? `#${hash}` : "/"}
+      className="section-tag"
+      style={{ ...S.tag, color, display: "block" }}
+      onClick={(e) => {
+        e.preventDefault();
+        onNavigate(sectionIndex, hash);
+      }}
+    >
+      {children}
+    </a>
+  );
+}
+
 // --------------------------- Filter demo (embedded) -------------------------
 // Suggestion pools + qualifier rules live in src/data/site.ts
 
@@ -922,6 +947,42 @@ export default function MotionSite() {
   const E = (name) => (el) => { if (el) els.current[name] = el; };
   const isMobile = useIsMobile();
 
+  const scrollToSectionIndex = useCallback((idx) => {
+    const vh = scenes.current[0]?.offsetHeight || window.innerHeight;
+    const w = wrappers.current[idx];
+    const last = wrappers.current.length - 1;
+    window.scrollTo(0, getSectionScrollTarget(idx, w, vh, last));
+  }, []);
+
+  const navigateToSection = useCallback((idx, hash) => {
+    scrollToSectionIndex(idx);
+    history.pushState(null, "", hash ? `#${hash}` : window.location.pathname + window.location.search);
+  }, [scrollToSectionIndex]);
+
+  useLayoutEffect(() => {
+    const go = (hash) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (!hash) {
+          scrollToSectionIndex(0);
+          return;
+        }
+        const idx = SECTION_HASHES[hash];
+        if (idx !== undefined) scrollToSectionIndex(idx);
+      }));
+    };
+    const pending = document.documentElement.getAttribute("data-initial-hash");
+    if (pending) {
+      document.documentElement.removeAttribute("data-initial-hash");
+      go(pending);
+      history.replaceState(null, "", `#${pending}`);
+    } else {
+      go(window.location.hash.slice(1));
+    }
+    const onHashChange = () => go(window.location.hash.slice(1));
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [scrollToSectionIndex]);
+
   useEffect(() => {
     reduce.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf;
@@ -973,11 +1034,7 @@ export default function MotionSite() {
             let best = null;
             wrappers.current.forEach((w, i) => {
               if (!w) return;
-              // hold = all entrance animations complete (exit pull starts 0.62)
-              const target =
-                i === 0 ? 0 :
-                i === last ? w.offsetTop + (w.offsetHeight - vh) :        // contact: very bottom
-                w.offsetTop + (w.offsetHeight - vh) * 0.58;
+              const target = getSectionScrollTarget(i, w, vh, last);
               const d = target - y;
               if (Math.abs(d) <= 6 || Math.abs(d) >= vh * 0.55) return;
               // against-the-grain targets must be much closer to win
@@ -1271,6 +1328,16 @@ export default function MotionSite() {
           border-color: ${PINK};
           background: #221428;
         }
+        .section-tag {
+          text-decoration: none;
+          cursor: pointer;
+          transition: opacity .25s;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .section-tag:hover,
+        .section-tag:focus-visible {
+          opacity: 0.72;
+        }
       `}</style>
 
       <div style={S.progressTrack}><div ref={progressBar} style={S.progressFill} /></div>
@@ -1298,13 +1365,15 @@ export default function MotionSite() {
       </div>
 
       {/* SCENE 2 — WORK */}
-      <div ref={wrap(1)} style={{ ...S.wrapper, zIndex: 2, marginTop: "-100svh" }}>
+      <div ref={wrap(1)} id="production" style={{ ...S.wrapper, zIndex: 2, marginTop: "-100svh" }}>
         <div ref={scene(1)} style={{ ...S.scene, background: "#0e1020", clipPath: "inset(0 100% 0 0)" }}>
           <div ref={E("blade")} style={S.blade} />
           <div ref={innerRef(1)} style={S.inner}>
             <div ref={E("workTitle")}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                <p style={{ ...S.tag, color: BLUE }}>01 — production</p>
+                <SectionTag hash="production" sectionIndex={1} color={BLUE} onNavigate={navigateToSection}>
+                  01 — production
+                </SectionTag>
                 <a
                   href="https://github.com/facebook/react/issues"
                   target="_blank"
@@ -1336,10 +1405,12 @@ export default function MotionSite() {
       </div>
 
       {/* SCENE 3 — TC39 */}
-      <div ref={wrap(2)} style={{ ...S.wrapper, zIndex: 3, marginTop: "-100svh" }}>
+      <div ref={wrap(2)} id="language" style={{ ...S.wrapper, zIndex: 3, marginTop: "-100svh" }}>
         <div ref={scene(2)} style={{ ...S.scene, background: "#150e24", clipPath: "circle(0% at 30% 45%)" }}>
           <div ref={innerRef(2)} style={S.inner}>
-            <p style={{ ...S.tag, color: PURPLE }}>02 — language</p>
+            <SectionTag hash="language" sectionIndex={2} color={PURPLE} onNavigate={navigateToSection}>
+              02 — language
+            </SectionTag>
             <h2 style={S.h2}>Shipped in ES2020<span style={{ color: PURPLE }}>.</span></h2>
             <div style={S.codeLine}>
               <span>
@@ -1369,12 +1440,14 @@ export default function MotionSite() {
       </div>
 
       {/* SCENE 4 — RECORD */}
-      <div ref={wrap(3)} style={{ ...S.wrapper, zIndex: 4, marginTop: "-100svh" }}>
+      <div ref={wrap(3)} id="record" style={{ ...S.wrapper, zIndex: 4, marginTop: "-100svh" }}>
         <div ref={scene(3)} style={{ ...S.scene, background: "#0d1418", clipPath: "inset(50% 0 50% 0)" }}>
           <div ref={E("slotTop")} style={{ ...S.slotLine, top: "50%" }} />
           <div ref={E("slotBot")} style={{ ...S.slotLine, top: "50%" }} />
           <div ref={innerRef(3)} style={S.inner}>
-            <p style={{ ...S.tag, color: GREEN }}>03 — record</p>
+            <SectionTag hash="record" sectionIndex={3} color={GREEN} onNavigate={navigateToSection}>
+              03 — record
+            </SectionTag>
             <h2 style={{ ...S.h2, fontFamily: "'JetBrains Mono', monospace", fontSize: "clamp(26px, 4.5vw, 44px)", letterSpacing: "-0.01em" }}>
               CHANGELOG<span style={{ color: GREEN }}>.md</span>
             </h2>
@@ -1392,10 +1465,12 @@ export default function MotionSite() {
       </div>
 
       {/* SCENE 5 — CONTACT */}
-      <div ref={wrap(4)} style={{ ...S.wrapper, height: "200svh", zIndex: 5, marginTop: "-100svh" }}>
+      <div ref={wrap(4)} id="contact" style={{ ...S.wrapper, height: "200svh", zIndex: 5, marginTop: "-100svh" }}>
         <div ref={scene(4)} style={{ ...S.scene, background: "#160d18", clipPath: "inset(100% 0 0 0)" }}>
           <div style={{ ...S.inner, textAlign: "center" }}>
-            <p style={{ ...S.tag, color: PINK }}>04 — contact</p>
+            <SectionTag hash="contact" sectionIndex={4} color={PINK} onNavigate={navigateToSection}>
+              04 — contact
+            </SectionTag>
             <a className="contact-email lk" href={`mailto:${EMAIL}`}>
               <span style={{ ...S.serif, fontSize: "clamp(28px, 6vw, 78px)", display: "inline-flex", flexWrap: "wrap", justifyContent: "center" }}>
                 {EMAIL.split("").map((ch, i) => (
