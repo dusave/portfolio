@@ -535,17 +535,47 @@ function FilterScrollInput({ input, interactive = true, showCaret = false, onCha
 
 function FilterSuggestions({ input, caret, active, onPick, onActive, interactive, scrollLeft = 0 }) {
   const mirrorRef = useRef(null);
+  const menuRef = useRef(null);
   const anchorText = getSuggestionAnchorText(input, caret);
-  const anchorKey = `${anchorText}|${caret}|${scrollLeft}`;
-  const [anchor, setAnchor] = useState({ key: "", left: null });
   const { suggestions } = getFilterSuggestions(input, caret);
   const visible = suggestions.slice(0, 6);
+  const anchorKey = `${anchorText}|${caret}|${scrollLeft}|${visible.length}`;
+  const [menuPos, setMenuPos] = useState(null);
 
   useLayoutEffect(() => {
-    setAnchor({ key: anchorKey, left: mirrorRef.current?.offsetWidth ?? 0 });
-  }, [anchorKey]);
+    if (visible.length === 0) {
+      setMenuPos(null);
+      return;
+    }
 
-  const isPositioned = anchor.key === anchorKey && anchor.left !== null;
+    const mirrorWidth = mirrorRef.current?.offsetWidth ?? 0;
+    const idealLeft = Math.max(14, 37 + mirrorWidth - scrollLeft);
+    const container = mirrorRef.current?.offsetParent;
+    const containerWidth = container?.clientWidth ?? 0;
+    const menuWidth = menuRef.current?.offsetWidth ?? 220;
+    const maxRight = containerWidth - 14;
+    const overflowsRight = idealLeft + menuWidth > maxRight;
+
+    let left;
+    let right;
+    if (overflowsRight) {
+      const caretRight = containerWidth - idealLeft;
+      if (idealLeft - menuWidth >= 14) {
+        right = caretRight;
+        left = "auto";
+      } else {
+        right = 14;
+        left = "auto";
+      }
+    } else {
+      left = idealLeft;
+      right = "auto";
+    }
+
+    setMenuPos({ key: anchorKey, left, right });
+  }, [anchorKey, scrollLeft, visible.length]);
+
+  const isPositioned = menuPos?.key === anchorKey;
 
   if (visible.length === 0) return null;
 
@@ -558,12 +588,14 @@ function FilterSuggestions({ input, caret, active, onPick, onActive, interactive
       >
         {anchorText}
       </span>
-      {isPositioned && (
       <div
+        ref={menuRef}
         style={{
           position: "absolute",
           top: "100%",
-          left: Math.max(14, 37 + anchor.left - scrollLeft),
+          left: isPositioned ? menuPos.left : Math.max(14, 37 - scrollLeft),
+          right: isPositioned ? menuPos.right : "auto",
+          visibility: isPositioned ? "visible" : "hidden",
           marginTop: 4,
           zIndex: 30,
           minWidth: 220,
@@ -626,7 +658,6 @@ function FilterSuggestions({ input, caret, active, onPick, onActive, interactive
           );
         })}
       </div>
-      )}
     </>
   );
 }
