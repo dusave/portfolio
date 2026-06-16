@@ -1300,6 +1300,26 @@ export default function MotionSite() {
         .changelog-co { grid-area: company; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 19px; }
         .changelog-role { grid-area: role; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #8c887d; margin: 0; }
         .changelog-when { grid-area: when; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #ece9e1; margin: 0; justify-self: end; white-space: nowrap; }
+        @media (max-width: 700px) {
+          .record-scene {
+            align-items: flex-start !important;
+            padding-top: max(16px, env(safe-area-inset-top, 0px));
+          }
+          .record-heading {
+            font-size: clamp(24px, 5vw, 30px) !important;
+            margin-top: 10px !important;
+          }
+          .changelog-list {
+            margin-top: 14px;
+          }
+          .changelog-row {
+            gap: 4px 12px;
+            padding: 8px 0;
+          }
+          .changelog-co { font-size: 17px; line-height: 1.2; }
+          .changelog-role { font-size: 10px; letter-spacing: .16em; line-height: 1.3; }
+          .changelog-when { font-size: 10px; letter-spacing: .14em; }
+        }
         @media (min-width: 701px) {
           .changelog-row {
             grid-template-columns: auto auto 1fr;
@@ -1472,17 +1492,17 @@ export default function MotionSite() {
 
       {/* SCENE 4 — RECORD */}
       <div ref={wrap(3)} id="record" style={{ ...S.wrapper, zIndex: 4, marginTop: "-100svh" }}>
-        <div ref={scene(3)} style={{ ...S.scene, background: "#0d1418", clipPath: "inset(50% 0 50% 0)" }}>
+        <div ref={scene(3)} className="record-scene" style={{ ...S.scene, background: "#0d1418", clipPath: "inset(50% 0 50% 0)" }}>
           <div ref={E("slotTop")} style={{ ...S.slotLine, top: "50%" }} />
           <div ref={E("slotBot")} style={{ ...S.slotLine, top: "50%" }} />
           <div ref={innerRef(3)} style={S.inner}>
             <SectionTag hash="record" sectionIndex={3} color={GREEN} onNavigate={navigateToSection}>
               03 — record
             </SectionTag>
-            <h2 style={{ ...S.h2, fontFamily: "'JetBrains Mono', monospace", fontSize: "clamp(26px, 4.5vw, 44px)", letterSpacing: "-0.01em" }}>
+            <h2 className="record-heading" style={{ ...S.h2, fontFamily: "'JetBrains Mono', monospace", fontSize: "clamp(26px, 4.5vw, 44px)", letterSpacing: "-0.01em" }}>
               CHANGELOG<span style={{ color: GREEN }}>.md</span>
             </h2>
-            <div style={{ marginTop: 20 }}>
+            <div className="changelog-list" style={{ marginTop: 20 }}>
               {ROLES.map(([co, role, when], i) => (
                 <div key={co} ref={rowRef(i)} className="changelog-row">
                   <span className="changelog-co">{co}</span>
