@@ -1,5 +1,5 @@
 {
-  "name": "savery-portfolio",
+  "name": "savery-v3",
   "type": "module",
   "version": "1.0.0",
   "private": true,
@@ -11,12 +11,13 @@
   },
   "dependencies": {
     "@astrojs/react": "5.0.7",
-    "astro": "6.4.3",
-    "lucide-react": "^0.460.0",
-    "react": "^19.0.0"
+    "astro": "6.4.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "typescript": "^5.7.0"
   }
 }

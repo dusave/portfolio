@@ -1,11 +1,9 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 
-// If you deploy to a PROJECT page (e.g. username.github.io/portfolio),
-// uncomment `base` and set it to '/your-repo-name'. For a custom domain
-// (dustinsavery.com) or a user repo (username.github.io), leave base off.
+// Custom domain (dustinsavery.com) → keep public/CNAME, base off.
+// Project repo (user.github.io/repo) → set base: '/repo' and delete CNAME.
 export default defineConfig({
-  site: 'https://dustin.codes',
-  // base: '/savery-portfolio',
+  site: 'https://dustinsavery.com',
   integrations: [react()],
 });
