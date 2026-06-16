@@ -1002,18 +1002,24 @@ export default function MotionSite() {
 
       // Outgoing scenes: subtle scale pull on CONTENT only — the scene's
       // background stays full-bleed so no gap opens at the edges.
-      const pull = (i) => {
-        const exit = ramp(P[i], 0.62, 1);
+      const pull = (i, start = 0.62, end = 1) => {
+        const exit = ramp(P[i], start, end);
         const inner = inners.current[i];
         if (inner) inner.style.transform = `scale(${1 - exit * 0.045})`;
       };
 
-      // SCENE 1 — HERO
+      // SCENE 1 — HERO (respond to scroll immediately so "you're driving" feels true)
       {
-        pull(0);
-        const exit = ramp(P[0], 0.62, 1);
-        if (x.heroLine1) x.heroLine1.style.transform = `translateY(${-exit * 50}px)`;
-        if (x.heroSub) x.heroSub.style.transform = `translateY(${exit * 30}px)`;
+        const p = P[0];
+        const exit = easeOut(ramp(p, 0.08, 0.88));
+        pull(0, 0.08, 0.88);
+        const early = easeOut(ramp(p, 0, 0.22));
+        if (x.heroScrollHint) {
+          x.heroScrollHint.style.opacity = 1 - early;
+          x.heroScrollHint.style.transform = `translateY(${early * 14}px)`;
+        }
+        if (x.heroLine1) x.heroLine1.style.transform = `translateY(${-exit * 50 - early * 10}px)`;
+        if (x.heroSub) x.heroSub.style.transform = `translateY(${exit * 30 + early * 8}px)`;
       }
 
       // SCENE 2 — WORK (diagonal wipe in, live Filter inside)
@@ -1283,7 +1289,7 @@ export default function MotionSite() {
               Twenty years building React component infrastructure, design systems, and
               the occasional JavaScript language feature.
             </p>
-            <p className="intro" style={{ ...S.tag, marginTop: 50, animationDelay: ".75s" }}>↓ scroll — you're driving</p>
+            <p ref={E("heroScrollHint")} className="intro" style={{ ...S.tag, marginTop: 50, animationDelay: ".75s" }}>↓ scroll — you're driving</p>
           </div>
         </div>
       </div>
