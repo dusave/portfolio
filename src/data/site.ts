@@ -7,7 +7,7 @@
 
 export const site = {
   name: 'Dustin Savery',
-  role: 'Staff Frontend Engineer',
+  role: 'Staff Design Engineer',
   location: 'Snohomish, WA',
   email: 'dustin@savery.io',
   github: 'https://github.com/dusave',
@@ -16,7 +16,8 @@ export const site = {
 
 // CHANGELOG.md — newest first. Add a job by adding a row.
 export const ROLES: [string, string, string][] = [
-  ['GitHub', 'Staff Frontend Engineer', '2021 — now'],
+  ['AlphaSense', 'Staff Design Engineer', '2026 — now'],
+  ['GitHub', 'Staff Frontend Engineer', '2021 — 26'],
   ['NVIDIA', 'Senior Frontend Engineer', '2020 — 21'],
   ['Lyft', 'Senior UX Engineer', '2019 — 20'],
   ['GoDaddy', 'Senior UI Engineer', '2016 — 19'],
